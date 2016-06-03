@@ -19,9 +19,10 @@ from bs4 import BeautifulSoup
 html = urllib.urlopen("http://www.diningcode.com/pop_list.php")
 soup = BeautifulSoup(html.read(), "html.parser")
 
-data = soup.find_all("div", {"class" : "dc-restaurant-name"})
+list = soup.find_all("div", {"id" : "pop_search_list"})
 
-for i in data:
+for i in list:
     print i.get_text().encode('utf-8')
-    
 
+for link in soup.find_all('a') :
+    print link.get('href')
