@@ -1,1 +1,1 @@
-# dinn2rbot
+# dinnerbot
