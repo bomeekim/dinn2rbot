@@ -2,7 +2,8 @@
 
 import urllib #URL을 열고 HTML을 읽는 모듈, urllib을 불러온다
 from bs4 import BeautifulSoup 
-
+from lxml import html
+import requests
 
 # html = urllib.urlopen("http://movie.naver.com/movie/running/current.nhn?view=list&tab=normal&order=reserve")
 # soup = BeautifulSoup(html.read(), "html.parser")
@@ -19,9 +20,25 @@ from bs4 import BeautifulSoup
 html = urllib.urlopen("http://www.diningcode.com/pop_list.php")
 soup = BeautifulSoup(html.read(), "html.parser")
 
-data = soup.find_all("div", {"class" : "dc-restaurant-name"})
+list = soup.find_all("div", {"id" : "pop_search_list"})
 
-for i in data:
-    print i.get_text().encode('utf-8')
+# for i in list:
+#     print i.get_text().encode('utf-8')
+# 
+# for link in soup.find_all('a') :
+#     print link.get('href')
+
+for title_list in soup.find_all("div", {"class" : "dc-restaurant-name"}):
+    #href = title_list.get('href')
+    for href_list in title_list.find_all("a"):
+        href = 'http://www.diningcode.com/' + href_list['href'].split('&')[0]
+        print href
+    
+    title = title_list.text
+    print title
     
 
+for info_list in soup.find_all("div", {"class" : "dc-restaurant-info"}):
+    info = info_list.text
+    print info
+    
