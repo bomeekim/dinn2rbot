@@ -27,7 +27,7 @@ CMD_START     = '/start'
 CMD_STOP      = '/stop'
 CMD_HELP      = '/help'
 CMD_BROADCAST = '/broadcast'
-
+process = 0
 # 봇 사용법 & 메시지
 USAGE = u"""[사용법] 아래 명령어를 메시지로 보내거나 버튼을 누르시면 됩니다.
 /start - (봇 활성화)
@@ -158,19 +158,38 @@ def process_cmds(msg):
     msg_id = msg['message_id']
     chat_id = msg['chat']['id']
     text = msg.get('text')
+    global process
     if (not text):
         return
     if CMD_START == text:
+        process = 0
         cmd_start(chat_id)
         return
     if (not get_enabled(chat_id)):
         return
     if CMD_STOP == text:
+        process = 0
         cmd_stop(chat_id)
         return
     if CMD_HELP == text:
         cmd_help(chat_id)
         return
+    if(process == 0):
+        if u'최비서' == text:
+            msg = u'네. 메뉴 정하기를 책임질 소프트웨어학과 최성신입니다. 메뉴 찾기를 실행하시겠습니까?'
+            msg_id = msg[1]
+            send_msg(chat_id, msg, msg_id)
+            process = process + 1
+            return
+        return
+    if(process == 1):
+        if u'응' == text:
+            msg = u'네, 알겠습니다. 현재계신 위치 또는 식사를 할 위치를 알려주세요'
+            send_msg(chat_id, msg)
+            process = process + 1
+            return
+        return
+    
     cmd_broadcast_match = re.match('^' + CMD_BROADCAST + ' (.*)', text)
     if cmd_broadcast_match:
         cmd_broadcast(chat_id, cmd_broadcast_match.group(1))
