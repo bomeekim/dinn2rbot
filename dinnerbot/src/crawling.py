@@ -2,43 +2,23 @@
 
 import urllib #URL을 열고 HTML을 읽는 모듈, urllib을 불러온다
 from bs4 import BeautifulSoup 
-from lxml import html
-import requests
-
-# html = urllib.urlopen("http://movie.naver.com/movie/running/current.nhn?view=list&tab=normal&order=reserve")
-# soup = BeautifulSoup(html.read(), "html.parser")
-# # 영화 제목이 페이지에 dt로 class 명이 tit로 되어 있기 때문이다.
-# data = soup.findAll("dt", { "class" : "tit" })
-# # 아래의 과정은 제목만 뽑아 내기 위함
-# data = str(data)
-# data = data.split("<")
-# for i in range(len(data)):
-#     if i % 5 == 2:
-#         print data[i].split(">")[1]
-
 
 html = urllib.urlopen("http://www.diningcode.com/pop_list.php")
 soup = BeautifulSoup(html.read(), "html.parser")
 
 list = soup.find_all("div", {"id" : "pop_search_list"})
+index = 0
 
-# for i in list:
-#     print i.get_text().encode('utf-8')
-# 
-# for link in soup.find_all('a') :
-#     print link.get('href')
+while index < 30 * 3:
+    for restaurants in list:
+        name_and_link = restaurants.find_all("a")[index]
+        name = name_and_link.text.encode('utf-8')
+        link = "http://www.diningcode.com/" + name_and_link["href"].split("&")[0]
 
-for title_list in soup.find_all("div", {"class" : "dc-restaurant-name"}):
-    #href = title_list.get('href')
-    for href_list in title_list.find_all("a"):
-        href = 'http://www.diningcode.com/' + href_list['href'].split('&')[0]
-        print href
-    
-    title = title_list.text
-    print title
-    
+        info = restaurants.find_all("div", {"class" : "dc-restaurant-info"})
+        keyword = info[index].text.encode('utf-8').replace('\n', '')
+        address = info[index+1].text.encode('utf-8').replace('\n', '')
+        tel = info[index+2].text.encode('utf-8').replace('\n', '')
+        index = index + 3
 
-for info_list in soup.find_all("div", {"class" : "dc-restaurant-info"}):
-    info = info_list.text
-    print info
-    
+        print name, link, keyword, address, tel
