@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # original:    https://github.com/yukuku/telebot
 # modified by: Bak Yeon O @ http://bakyeono.net
@@ -18,16 +18,23 @@ import json
 import logging
 import re
 
+#크롤링
+# from bs4 import BeautifulSoup 
 # 봇 토큰, 봇 API 주소
 TOKEN = '222474870:AAFJkDwrJ0BnqQI3IKwRr4S0PDf89brjJQE'
 BASE_URL = 'https://api.telegram.org/bot' + TOKEN + '/'
 
 # 봇이 응답할 명령어
-CMD_START     = '/start'
-CMD_STOP      = '/stop'
-CMD_HELP      = '/help'
+CMD_START = '/start'
+CMD_STOP = '/stop'
+CMD_HELP = '/help'
 CMD_BROADCAST = '/broadcast'
+
+# 전역변수
 process = 0
+menu = u'한식'
+location = u'사당'
+
 # 봇 사용법 & 메시지
 USAGE = u"""[사용법] 아래 명령어를 메시지로 보내거나 버튼을 누르시면 됩니다.
 /start - (봇 활성화)
@@ -35,7 +42,7 @@ USAGE = u"""[사용법] 아래 명령어를 메시지로 보내거나 버튼을 
 /help  - (이 도움말 보여주기)
 """
 MSG_START = u'봇을 시작합니다.'
-MSG_STOP  = u'봇을 정지합니다.'
+MSG_STOP = u'봇을 정지합니다.'
 
 # 커스텀 키보드
 CUSTOM_KEYBOARD = [
@@ -50,6 +57,30 @@ CUSTOM_KEYBOARD = [
 # 사용자가 /stop  누르면 비활성화
 class EnableStatus(ndb.Model):
     enabled = ndb.BooleanProperty(required=True, indexed=True, default=False,)
+
+# def getData(location, menu):
+#     html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
+#     soup = BeautifulSoup(html.read(), "html.parser")
+# 
+#     list = soup.find_all("div", {"id" : "search_list"})
+#     index = 0
+# 
+#     while index < 30 * 3:
+#         for restaurants in list:
+#             name_and_link = restaurants.find_all("a")[index]
+#             name = name_and_link.text.encode('utf-8')
+#             link = "http://www.diningcode.com/" + name_and_link["href"].split("&")[0]
+#     
+#             info = restaurants.find_all("div", {"class" : "dc-restaurant-info"})
+#             keyword = info[index].text.encode('utf-8').replace('\n', '')
+#             address = info[index + 1].text.encode('utf-8').replace('\n', '')
+#             tel = info[index + 2].text.encode('utf-8').replace('\n', '')
+#             index = index + 3
+#     
+#             print name, link, keyword, address, tel
+#             result = name + link + keyword + address + tel
+#     
+#     return result
 
 def set_enabled(chat_id, enabled):
     u"""set_enabled: 봇 활성화/비활성화 상태 변경
@@ -174,22 +205,57 @@ def process_cmds(msg):
     if CMD_HELP == text:
         cmd_help(chat_id)
         return
-    if(process == 0):
+    if(process == 0):  # 여친컨셉은 어때?
         if u'최비서' == text:
-            msg = u'네. 메뉴 정하기를 책임질 소프트웨어학과 최성신입니다. 메뉴 찾기를 실행하시겠습니까?'
-            msg_id = msg[1]
-            send_msg(chat_id, msg, msg_id)
+            msg_text = u'네. 메뉴 정하기를 책임질 소프트웨어학과 최성신입니다. 메뉴 찾기를 실행하시겠습니까?'
+            send_msg(chat_id, msg_text)
             process = process + 1
             return
         return
     if(process == 1):
         if u'응' == text:
-            msg = u'네, 알겠습니다. 현재계신 위치 또는 식사를 할 위치를 알려주세요'
-            send_msg(chat_id, msg)
+            msg_text = u'네, 알겠습니다. 현재계신 위치 또는 식사를 할 위치를 알려주세요'
+            send_msg(chat_id, msg_text)
+            location = msg_text
             process = process + 1
             return
         return
-    
+    if(process == 2):
+        # DB에서 지역 검색 
+        msg_text = u'사당이 맞습니까? 아니라면 "아니"를 입력해 주시고, 맞으면 원하시는 메뉴를 말씀해 주세요.'
+        msg_text += u'원하시는 메뉴가 없다면 "random" 또는 "아무거나"를 입력해 주세요.'
+         
+        send_msg(chat_id, msg_text)          
+        process = process + 1
+        return
+    if(process == 3):
+        if u'아니' == text:
+            process = 1
+        elif u'아무거나' or u'random':
+            process = process + 1    
+        else :
+            process = process + 2
+            return
+         
+        return
+    if(process == 4):  # random 추천
+        # 맛집 분류를 DB에 저장 후 랜덤으로 추출. url쿼리는 '지역 + 랜덤 맛집 분류' 
+        menu = u'한식'
+        # 실험용. 메뉴 랜덤으로 추출하는 함수 만들기. 
+        msg_text = u'그렇다면, 오늘 메뉴로' + menu + u'어떠세요? 싫으시면 "싫어"를 입력해 주세요.'
+        send_msg(chat_id, msg_text)
+        process = process + 1
+        return
+    if(process == 5):
+        if(u'싫어' == text):
+            process = 4
+        else :
+            # 서치하는 함수
+#             result = getData(location, menu)
+#             send_msg(chat_id,result)
+            return
+        return
+        
     cmd_broadcast_match = re.match('^' + CMD_BROADCAST + ' (.*)', text)
     if cmd_broadcast_match:
         cmd_broadcast(chat_id, cmd_broadcast_match.group(1))
