@@ -6,6 +6,9 @@
 # github:      https://github.com/bakyeono/using-telegram-bot-api
 #
 
+import sys
+sys.path.insert(0, 'libs')
+
 # 구글 앱 엔진 라이브러리 로드
 from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
@@ -18,8 +21,12 @@ import json
 import logging
 import re
 
-#크롤링
-# from bs4 import BeautifulSoup 
+# 메뉴 아무거나
+import random
+
+# 크롤링
+from bs4 import BeautifulSoup 
+
 # 봇 토큰, 봇 API 주소
 TOKEN = '222474870:AAFJkDwrJ0BnqQI3IKwRr4S0PDf89brjJQE'
 BASE_URL = 'https://api.telegram.org/bot' + TOKEN + '/'
@@ -29,6 +36,8 @@ CMD_START = '/start'
 CMD_STOP = '/stop'
 CMD_HELP = '/help'
 CMD_BROADCAST = '/broadcast'
+CMD_TODAY = '/today'
+CMD_TV = '/tv'
 
 # 전역변수
 process = 0
@@ -41,14 +50,14 @@ USAGE = u"""[사용법] 아래 명령어를 메시지로 보내거나 버튼을 
 /stop  - (봇 비활성화)
 /help  - (이 도움말 보여주기)
 """
-MSG_START = u'봇을 시작합니다.'
-MSG_STOP = u'봇을 정지합니다.'
+MSG_START = u'안녕하세요. 맛집찾기의 달인 최비서입니다.^_^\n현재 계신 곳의 위치 또는 식사할 위치를 알려주세요.'
+MSG_STOP = u'감사합니다. 언제든지 불러만 주세요~'
 
 # 커스텀 키보드
 CUSTOM_KEYBOARD = [
         [CMD_START],
         [CMD_STOP],
-        [CMD_HELP],
+        [CMD_HELP]
         ]
 
 # 채팅별 봇 활성화 상태
@@ -58,29 +67,25 @@ CUSTOM_KEYBOARD = [
 class EnableStatus(ndb.Model):
     enabled = ndb.BooleanProperty(required=True, indexed=True, default=False,)
 
-# def getData(location, menu):
-#     html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
-#     soup = BeautifulSoup(html.read(), "html.parser")
-# 
-#     list = soup.find_all("div", {"id" : "search_list"})
-#     index = 0
-# 
-#     while index < 30 * 3:
-#         for restaurants in list:
-#             name_and_link = restaurants.find_all("a")[index]
-#             name = name_and_link.text.encode('utf-8')
-#             link = "http://www.diningcode.com/" + name_and_link["href"].split("&")[0]
-#     
-#             info = restaurants.find_all("div", {"class" : "dc-restaurant-info"})
-#             keyword = info[index].text.encode('utf-8').replace('\n', '')
-#             address = info[index + 1].text.encode('utf-8').replace('\n', '')
-#             tel = info[index + 2].text.encode('utf-8').replace('\n', '')
-#             index = index + 3
-#     
-#             print name, link, keyword, address, tel
-#             result = name + link + keyword + address + tel
-#     
-#     return result
+def get_restaurant_info(location, menu):
+    html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
+    soup = BeautifulSoup(html.read(), "html.parser")
+   
+    list = soup.find_all("div", {"id" : "search_list"})
+    index = 0
+   
+    while index < 10 * 3:
+        for restaurants in list:
+            name_and_link = restaurants.find_all("a")[index]
+            name = name_and_link.text.encode('utf-8')
+            link = "http://www.diningcode.com/" + name_and_link["href"].split("&")[0]
+       
+            info = restaurants.find_all("div", {"class" : "dc-restaurant-info"})
+            keyword = info[index].text.encode('utf-8').replace('\n', '')
+            address = info[index + 1].text.encode('utf-8').replace('\n', '')
+            tel = info[index + 2].text.encode('utf-8').replace('\n', '')
+            index = index + 3
+    return name
 
 def set_enabled(chat_id, enabled):
     u"""set_enabled: 봇 활성화/비활성화 상태 변경
@@ -180,7 +185,11 @@ def cmd_echo(chat_id, text, reply_to):
     reply_to: (integer) 답장할 메시지 ID
     """
     send_msg(chat_id, text, reply_to=reply_to)
-
+    
+def search_restaurant(chat_id):
+    result = get_restaurant_info(location, menu) #반환할 때 순차적으로 1개 해야할 듯?
+    send_msg(chat_id, result)
+    
 def process_cmds(msg):
     u"""사용자 메시지를 분석해 봇 명령을 처리
     chat_id: (integer) 채팅 ID
@@ -189,11 +198,11 @@ def process_cmds(msg):
     msg_id = msg['message_id']
     chat_id = msg['chat']['id']
     text = msg.get('text')
-    global process
+    global process, menu, location
     if (not text):
         return
     if CMD_START == text:
-        process = 0
+        process = 2
         cmd_start(chat_id)
         return
     if (not get_enabled(chat_id)):
@@ -205,64 +214,49 @@ def process_cmds(msg):
     if CMD_HELP == text:
         cmd_help(chat_id)
         return
-    if(process == 0):  # 여친컨셉은 어때?
-        if u'최비서' == text:
-            msg_text = u'네. 메뉴 정하기를 책임질 소프트웨어학과 최성신입니다. 메뉴 찾기를 실행하시겠습니까?'
-            send_msg(chat_id, msg_text)
-            process = process + 1
-            return
-        return
-    if(process == 1):
-        if u'응' == text:
-            msg_text = u'네, 알겠습니다. 현재계신 위치 또는 식사를 할 위치를 알려주세요'
-            send_msg(chat_id, msg_text)
-            location = msg_text
-            process = process + 1
-            return
-        return
-    if(process == 2):
-        # DB에서 지역 검색 
-        msg_text = u'사당이 맞습니까? 아니라면 "아니"를 입력해 주시고, 맞으면 원하시는 메뉴를 말씀해 주세요.'
-        msg_text += u'원하시는 메뉴가 없다면 "random" 또는 "아무거나"를 입력해 주세요.'
-         
-        send_msg(chat_id, msg_text)          
-        process = process + 1
-        return
-    if(process == 3):
-        if u'아니' == text:
-            process = 1
-        elif u'아무거나' or u'random':
-            process = process + 1    
-        else :
-            process = process + 2
-            return
-         
-        return
-    if(process == 4):  # random 추천
-        # 맛집 분류를 DB에 저장 후 랜덤으로 추출. url쿼리는 '지역 + 랜덤 맛집 분류' 
-        menu = u'한식'
-        # 실험용. 메뉴 랜덤으로 추출하는 함수 만들기. 
-        msg_text = u'그렇다면, 오늘 메뉴로' + menu + u'어떠세요? 싫으시면 "싫어"를 입력해 주세요.'
+    
+    if process == 1: #다시 검색할 때 (TODO:함수로 만들어야함)
+        msg_text = u'현재 계신 곳의 위치 또는 식사할 위치를 알려주세요.'
         send_msg(chat_id, msg_text)
         process = process + 1
         return
-    if(process == 5):
-        if(u'싫어' == text):
-            process = 4
-        else :
-            # 서치하는 함수
-#             result = getData(location, menu)
-#             send_msg(chat_id,result)
-            return
+    
+    if process == 2:
+        # LOCATION 변수에 유저가 입력한 지역저장
+        location = text
+        # DB에서 지역 검색 
+        msg_text = location
+        msg_text += u'이 맞으신가요? 아니라면 "아니"를 입력해 주시고, \n맞으면 원하시는 메뉴를 말씀해 주세요.\n\n'
+        msg_text += u'원하시는 메뉴가 없다면 "아무거나"를 입력해 주세요.'
+        send_msg(chat_id, msg_text)
+        process = process + 1
         return
-        
-    cmd_broadcast_match = re.match('^' + CMD_BROADCAST + ' (.*)', text)
-    if cmd_broadcast_match:
-        cmd_broadcast(chat_id, cmd_broadcast_match.group(1))
+    
+    if process == 3:
+        if u'아니' == text:
+            process = 1
+        elif u'아무거나' == text:
+            menu_list = '한식', '중식', '일식', '해산물', '고기', '뷔페', '분식'
+            menu = random.shuffle(menu_list)
+            search_restaurant(chat_id)
+        else:
+            # MENU 변수에 유저가 입력한 메뉴저장
+            menu = text
+            msg_text = location
+            msg_text += " "
+            msg_text += menu
+            msg_text += u' (을)를 빠르게 찾아드릴게요~\n잠시만 기다려주세요.'
+            send_msg(chat_id, msg_text)
+            process = process + 1
         return
-    cmd_echo(chat_id, text, reply_to=msg_id)
-    return
+    
+    if process == 4:
+        search_restaurant(chat_id)
+        return
 
+    
+    
+            
 # 웹 요청에 대한 핸들러 정의
 # /me 요청시
 class MeHandler(webapp2.RequestHandler):

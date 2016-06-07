@@ -1,16 +1,21 @@
 #-*- coding: utf-8 -*-  #한글을 쓸 때는 꼭 붙인다. 문자 인코딩을 UTF-8로 하겠다는 것이다. 인코딩은 앞으로 계속 속썩일 것이다.
 
+import random
 import urllib #URL을 열고 HTML을 읽는 모듈, urllib을 불러온다
 from bs4 import BeautifulSoup 
 
-def getData(location, menu):
-    html = urllib.urlopen("http://www.diningcode.com/list.php?query="+location+"+"+menu)
+location = u'사당역'
+menu = u'한식'
+
+def getData():
+    #html = urllib.urlopen("http://www.diningcode.com/list.php?query="+location+"+"+menu)
+    html = urllib.urlopen("http://www.diningcode.com/list.php?query=사당역+한식")
     soup = BeautifulSoup(html.read(), "html.parser")
 
     list = soup.find_all("div", {"id" : "search_list"})
     index = 0
 
-    while index < 30 * 3:
+    while index < 10 * 3:
         for restaurants in list:
             name_and_link = restaurants.find_all("a")[index]
             name = name_and_link.text.encode('utf-8')
@@ -23,6 +28,9 @@ def getData(location, menu):
             index = index + 3
     
             print name, link, keyword, address, tel
-            result = name + link + keyword + address + tel
     
-    return result
+    return name
+
+
+result = getData()
+print result
