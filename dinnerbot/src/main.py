@@ -42,6 +42,7 @@ CMD_TV = '/tv'
 # 전역변수
 process = 0
 menu = u'한식'
+menu_detail = ''
 location = u'사당'
 
 # 봇 사용법 & 메시지
@@ -67,14 +68,14 @@ CUSTOM_KEYBOARD = [
 class EnableStatus(ndb.Model):
     enabled = ndb.BooleanProperty(required=True, indexed=True, default=False,)
 
-def get_restaurant_info(location, menu):
+def get_restaurant_info(result, location, menu, menu_detail):
     html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
     soup = BeautifulSoup(html.read(), "html.parser")
    
     list = soup.find_all("div", {"id" : "search_list"})
     index = 0
    
-    while index < 10 * 3:
+    while index < 3 * 3:
         for restaurants in list:
             name_and_link = restaurants.find_all("a")[index]
             name = name_and_link.text.encode('utf-8')
@@ -85,7 +86,10 @@ def get_restaurant_info(location, menu):
             address = info[index + 1].text.encode('utf-8').replace('\n', '')
             tel = info[index + 2].text.encode('utf-8').replace('\n', '')
             index = index + 3
-    return name
+            tmp = name+" "+link+" "+ keyword+" "+ address+" "+ tel
+            result.append(tmp)
+            
+    return result
 
 def set_enabled(chat_id, enabled):
     u"""set_enabled: 봇 활성화/비활성화 상태 변경
@@ -187,8 +191,26 @@ def cmd_echo(chat_id, text, reply_to):
     send_msg(chat_id, text, reply_to=reply_to)
     
 def search_restaurant(chat_id):
-    result = get_restaurant_info(location, menu) #반환할 때 순차적으로 1개 해야할 듯?
-    send_msg(chat_id, result)
+    send_msg(chat_id, u'식당찾기')
+    result = {}
+    result = get_restaurant_info(result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
+    send_msg(chat_id, result.get(0))
+    
+    
+def random_menu(chat_id):
+    global menu
+    
+    menu = u'한식'
+    msg_text = u'오늘 메뉴로 ' + menu + u'어떠세요?'
+    send_msg(chat_id, msg_text)
+    
+    
+def random_menu_detail(chat_id):
+    global menu_detail
+    
+    menu_detail = u'삼겹살'
+    msg_text = u'세부 메뉴를 추천해 드릴게요. \n' + menu_detail + u'은(는) 어떠세요?'
+    send_msg(chat_id, msg_text)
     
 def process_cmds(msg):
     u"""사용자 메시지를 분석해 봇 명령을 처리
@@ -198,7 +220,7 @@ def process_cmds(msg):
     msg_id = msg['message_id']
     chat_id = msg['chat']['id']
     text = msg.get('text')
-    global process, menu, location
+    global process, menu, menu_detail, location
     if (not text):
         return
     if CMD_START == text:
@@ -226,7 +248,7 @@ def process_cmds(msg):
         location = text
         # DB에서 지역 검색 
         msg_text = location
-        msg_text += u'이 맞으신가요? 아니라면 "아니"를 입력해 주시고, \n맞으면 원하시는 메뉴를 말씀해 주세요.\n\n'
+        msg_text += u'이(가) 맞으신가요? 아니라면 "아니"를 입력해 주시고, \n맞으면 원하시는 메뉴를 말씀해 주세요.\n\n'
         msg_text += u'원하시는 메뉴가 없다면 "아무거나"를 입력해 주세요.'
         send_msg(chat_id, msg_text)
         process = process + 1
@@ -235,10 +257,13 @@ def process_cmds(msg):
     if process == 3:
         if u'아니' == text:
             process = 1
+            process_cmds(' ')
         elif u'아무거나' == text:
-            menu_list = '한식', '중식', '일식', '해산물', '고기', '뷔페', '분식'
-            menu = random.shuffle(menu_list)
-            search_restaurant(chat_id)
+#             menu_list = '한식', '중식', '일식', '해산물', '고기', '뷔페', '분식'
+#             menu = random.shuffle(menu_list)
+            random_menu(chat_id);
+            process = process + 1
+#             search_restaurant(chat_id)
         else:
             # MENU 변수에 유저가 입력한 메뉴저장
             menu = text
@@ -247,10 +272,43 @@ def process_cmds(msg):
             msg_text += menu
             msg_text += u' (을)를 빠르게 찾아드릴게요~\n잠시만 기다려주세요.'
             send_msg(chat_id, msg_text)
+            process = process + 4
+            process_cmds(msg)
+        return
+    
+    if process == 4: #'아무거나' 메뉴추천
+        if u'싫어' == text:
+            msg_text = u'네, 다른 메뉴를 추천해 드릴게요.'
+            send_msg(chat_id, msg_text)
+            random_menu(chat_id)
+            return
+        elif u'좋아' == text:
+            msg_text = menu + u' 이(가) 좋으시군요, 세부 메뉴를 추천해드릴까요?'
+            send_msg(chat_id, msg_text)
             process = process + 1
         return
     
-    if process == 4:
+    if process == 5: #세부 메뉴 추천
+        if u'응' == text:
+            random_menu_detail(chat_id)   
+            process = process + 1    
+        return
+        
+    if process == 6: #세부메뉴 메뉴추천
+        if u'싫어' == text:
+            msg_text = u'네, 다른 메뉴를 추천해 드릴게요.'
+            send_msg(chat_id, msg_text)
+            random_menu_detail(chat_id)
+            return
+        elif u'좋아' == text:
+            msg_text = menu_detail + u' 이(가) 좋으시군요.\n' + location + " "  + menu + " " + menu_detail 
+            msg_text += u'을(를) 빠르게 찾아드릴게요~\n잠시만 기다려주세요.' 
+            send_msg(chat_id, msg_text)
+            process = process + 1
+            process_cmds(msg)
+        return
+    
+    if process == 7:
         search_restaurant(chat_id)
         return
 
