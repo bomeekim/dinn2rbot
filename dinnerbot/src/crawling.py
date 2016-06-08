@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-  #한글을 쓸 때는 꼭 붙인다.
 import sys
 sys.path.insert(0, 'libs')
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 from google.appengine.api import urlfetch
 from google.appengine.ext import ndb
