@@ -68,16 +68,21 @@ CUSTOM_KEYBOARD = [
 class EnableStatus(ndb.Model):
     enabled = ndb.BooleanProperty(required=True, indexed=True, default=False,)
 
-def get_restaurant_info(result, location, menu, menu_detail):
-    html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
+def get_restaurant_info(chat_id, result, location, menu, menu_detail):
+#     html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
+    html = urllib.urlopen("http://www.diningcode.com/list.php?query=사당역+한식")
     soup = BeautifulSoup(html.read(), "html.parser")
-   
+    
+    
     list = soup.find_all("div", {"id" : "search_list"})
     index = 0
-   
+    
     while index < 3 * 3:
         for restaurants in list:
+            send_msg(chat_id, u'식당찾기')
+            tmp = []
             name_and_link = restaurants.find_all("a")[index]
+            
             name = name_and_link.text.encode('utf-8')
             link = "http://www.diningcode.com/" + name_and_link["href"].split("&")[0]
        
@@ -86,7 +91,11 @@ def get_restaurant_info(result, location, menu, menu_detail):
             address = info[index + 1].text.encode('utf-8').replace('\n', '')
             tel = info[index + 2].text.encode('utf-8').replace('\n', '')
             index = index + 3
-            tmp = name+" "+link+" "+ keyword+" "+ address+" "+ tel
+            tmp.append(name)
+            tmp.append(link)
+            tmp.append(keyword)
+            tmp.append(address)
+            tmp.append(tel)
             result.append(tmp)
             
     return result
@@ -191,10 +200,15 @@ def cmd_echo(chat_id, text, reply_to):
     send_msg(chat_id, text, reply_to=reply_to)
     
 def search_restaurant(chat_id):
-    send_msg(chat_id, u'식당찾기')
-    result = {}
-    result = get_restaurant_info(result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
-    send_msg(chat_id, result.get(0))
+    i = 0
+    result = []
+    
+    result = get_restaurant_info(chat_id, result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
+    
+    while (i < 3):
+        msg_text = result[i][1].decode('utf-8').encode('utf-8') 
+        send_msg(chat_id, msg_text)
+
     
     
 def random_menu(chat_id):
@@ -245,7 +259,7 @@ def process_cmds(msg):
     
     if process == 2:
         # LOCATION 변수에 유저가 입력한 지역저장
-        location = text
+        location = text         
         # DB에서 지역 검색 
         msg_text = location
         msg_text += u'이(가) 맞으신가요? 아니라면 "아니"를 입력해 주시고, \n맞으면 원하시는 메뉴를 말씀해 주세요.\n\n'
@@ -291,7 +305,17 @@ def process_cmds(msg):
     if process == 5: #세부 메뉴 추천
         if u'응' == text:
             random_menu_detail(chat_id)   
-            process = process + 1    
+            process = process + 1  
+        elif u'아니' == text:
+            # MENU 변수에 유저가 입력한 메뉴저장
+            menu = text
+            msg_text = location
+            msg_text += " "
+            msg_text += menu
+            msg_text += u' (을)를 빠르게 찾아드릴게요~\n잠시만 기다려주세요.'
+            send_msg(chat_id, msg_text)
+            process = process + 3
+            process_cmds(msg)  
         return
         
     if process == 6: #세부메뉴 메뉴추천
@@ -309,7 +333,15 @@ def process_cmds(msg):
         return
     
     if process == 7:
-        search_restaurant(chat_id)
+#         search_restaurant(chat_id)
+        i = 0
+        result = []
+    
+        result = get_restaurant_info(chat_id, result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
+        
+        while (i < 3):
+            msg_text = result[i][1].decode('utf-8').encode('utf-8') 
+            send_msg(chat_id, msg_text)
         return
 
     
