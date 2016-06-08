@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# original:    https://github.com/yukuku/telebot
-# modified by: Bak Yeon O @ http://bakyeono.net
-# description: http://bakyeono.net/post/2015-08-24-using-telegram-bot-api.html
-# github:      https://github.com/bakyeono/using-telegram-bot-api
-#
+
 
 import sys
 sys.path.insert(0, 'libs')
@@ -19,7 +15,7 @@ import urllib
 import urllib2
 import json
 import logging
-import re
+import re 
 
 # 메뉴 아무거나
 import random
@@ -44,6 +40,7 @@ process = 0
 menu = u'한식'
 menu_detail = ''
 location = u'사당'
+cid = 0
 
 # 봇 사용법 & 메시지
 USAGE = u"""[사용법] 아래 명령어를 메시지로 보내거나 버튼을 누르시면 됩니다.
@@ -71,16 +68,16 @@ class EnableStatus(ndb.Model):
 def get_restaurant_info(chat_id, result, location, menu, menu_detail):
     
 #     html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
-    html = urllib.urlopen("http://www.diningcode.com/list.php?query=사당역+한식")
+    html = urllib2.urlopen("http://www.diningcode.com/list.php?query=사당역+한식")
     soup = BeautifulSoup(html.read(), "html.parser")
  
-    list = soup.find_all("div", {"id" : "search_list"})
+    list1 = soup.find_all("div", {"id" : "search_list"})
     index = 0
     
-    send_msg(chat_id, u'식당찾기')
+    send_msg(chat_id, len(list1).text)
     while index < 3 * 3:
-        for restaurants in list:
-            
+        for restaurants in list1:
+            send_msg(chat_id, u'식당찾기')
             tmp = []
             name_and_link = restaurants.find_all("a")[index]
             
@@ -99,7 +96,7 @@ def get_restaurant_info(chat_id, result, location, menu, menu_detail):
             tmp.append(tel)
             result.append(tmp)
             
-    return result
+        return result
 
 def set_enabled(chat_id, enabled):
     u"""set_enabled: 봇 활성화/비활성화 상태 변경
@@ -235,7 +232,9 @@ def process_cmds(msg):
     msg_id = msg['message_id']
     chat_id = msg['chat']['id']
     text = msg.get('text')
-    global process, menu, menu_detail, location
+    global process, menu, menu_detail, location, cid
+    
+    cdi = chat_id
     if (not text):
         return
     if CMD_START == text:
@@ -336,12 +335,18 @@ def process_cmds(msg):
     if process == 7:
 #         search_restaurant(chat_id)
         i = 0
-        result = []
-        result = get_restaurant_info(chat_id, result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
-        while (i < 3):
-            msg_text = result[i][1].decode('utf-8').encode('utf-8') 
-            send_msg(chat_id, msg_text)
-            
+        #result = []
+        #result = get_restaurant_info(chat_id, result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
+        send_msg(chat_id, u'test')
+#         while (i < 3):
+#             msg_text = result[i][1].decode('utf-8').encode('utf-8') 
+#             send_msg(chat_id, msg_text)
+#             
+        app = webapp2.WSGIApplication([
+            ('/', CrawlingHandler)
+        ], debug=True)
+        
+        send_msg(chat_id, 'testasdf')
         return
 
     
@@ -375,11 +380,36 @@ class WebhookHandler(webapp2.RequestHandler):
         body = json.loads(self.request.body)
         self.response.write(json.dumps(body))
         process_cmds(body['message'])
+        
+class CrawlingHandler(webapp2.RequestHandler):
+    def get(self):
+        global cid
+        html = urllib2.urlopen('http://www.diningcode.com/list.php?query=사당역+한식')
+        soup = BeautifulSoup(html.read(), "html.parser")
+        
+        list = soup.find_all("div", {"id" : "search_list"})
+        index = 0
+        self.response.write('asdfasdfasdf')
+        while index < 10 * 3:
+            for restaurants in list:
+                name_and_link = restaurants.find_all('a')[index]
+                name = name_and_link.text.encode('utf-8')
+                link = "http://www.diningcode.com/" + name_and_link["href"].split("&")[0]
+                
+                info = restaurants.find_all("div", {"class" : "dc-restaurant-info"})
+                keyword = info[index].text.encode('utf-8').replace('\n', '')
+                address = info[index + 1].text.encode('utf-8').replace('\n', '')
+                tel = info[index + 2].text.encode('utf-8').replace('\n', '')
+                index = index + 3
+                    
+                result = [name, link, keyword, address, tel]
+                send_msg(cid, result[0].decode('utf-8').encode('utf-8'))
+            #self.response.write(result)
 
 # 구글 앱 엔진에 웹 요청 핸들러 지정
 app = webapp2.WSGIApplication([
     ('/me', MeHandler),
     ('/updates', GetUpdatesHandler),
     ('/set-webhook', SetWebhookHandler),
-    ('/webhook', WebhookHandler),
+    ('/webhook', WebhookHandler)
 ], debug=True)
