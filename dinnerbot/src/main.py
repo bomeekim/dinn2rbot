@@ -85,8 +85,7 @@ def get_restaurant_info(chat_id, result, location, menu, menu_detail):
 #     html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
     html = urllib.urlopen("http://www.diningcode.com/list.php?query=사당역+한식")
     soup = BeautifulSoup(html.read(), "html.parser")
-    
-    
+
     list = soup.find_all("div", {"id" : "search_list"})
     index = 0
     
@@ -222,8 +221,6 @@ def search_restaurant(chat_id):
         msg_text = result[i][1].decode('utf-8').encode('utf-8') 
         send_msg(chat_id, msg_text)
 
-    
-    
 def random_menu(chat_id):
     global menu
     global CLOUDSQL_PROJECT
@@ -438,8 +435,7 @@ def process_cmds(msg):
     if process == 7:
 #         search_restaurant(chat_id)
         i = 0
-        result = []
-    
+        result = []    
         result = get_restaurant_info(chat_id, result, location, menu, menu_detail)  # 반환할 때 순차적으로 1개 해야할 듯?
         
         while (i < 3):
