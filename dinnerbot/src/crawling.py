@@ -4,6 +4,7 @@ sys.path.insert(0, 'libs')
 
 import random
 import urllib  # URL을 열고 HTML을 읽는 모듈, urllib을 불러온다
+import urllib2
 from bs4 import BeautifulSoup 
 
 location = u'사당역'
@@ -15,13 +16,20 @@ j = 0
 def getData():
     global result
     tmp = []
-    # html = urllib.urlopen("http://www.diningcode.com/list.php?query="+location+"+"+menu)
+    html = urllib.urlopen("http://www.diningcode.com/list.php?query="+location.encode('utf-8')+"+"+menu.encode('utf-8'))
     html = urllib.urlopen("http://www.diningcode.com/list.php?query=사당역+한식")
     soup = BeautifulSoup(html.read(), "html.parser")
-
+ 
     list = soup.find_all("div", {"id" : "search_list"})
     index = 0
-    
+
+#     url = 'http://www.diningcode.com/list.php?query=' + location.encode('utf-8') + '+' + menu.encode('utf-8')
+#     url = urllib.quote(url,'/:?=&')
+#     resp = urllib2.urlopen(url).read()
+#     soup = BeautifulSoup(resp,"html.parser")
+#     list = soup.find_all('div',{"id" : "search_list"})
+#     
+#     index = 0
 
     while index < 3 * 3:
         for restaurants in list:

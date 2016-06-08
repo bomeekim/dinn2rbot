@@ -69,17 +69,18 @@ class EnableStatus(ndb.Model):
     enabled = ndb.BooleanProperty(required=True, indexed=True, default=False,)
 
 def get_restaurant_info(chat_id, result, location, menu, menu_detail):
+    
 #     html = urllib.urlopen("http://www.diningcode.com/list.php?query=" + location + "+" + menu)
     html = urllib.urlopen("http://www.diningcode.com/list.php?query=사당역+한식")
     soup = BeautifulSoup(html.read(), "html.parser")
-    
-    
+ 
     list = soup.find_all("div", {"id" : "search_list"})
     index = 0
     
+    send_msg(chat_id, u'식당찾기')
     while index < 3 * 3:
         for restaurants in list:
-            send_msg(chat_id, u'식당찾기')
+            
             tmp = []
             name_and_link = restaurants.find_all("a")[index]
             
@@ -199,15 +200,15 @@ def cmd_echo(chat_id, text, reply_to):
     """
     send_msg(chat_id, text, reply_to=reply_to)
     
-def search_restaurant(chat_id):
-    i = 0
-    result = []
-    
-    result = get_restaurant_info(chat_id, result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
-    
-    while (i < 3):
-        msg_text = result[i][1].decode('utf-8').encode('utf-8') 
-        send_msg(chat_id, msg_text)
+# def search_restaurant(chat_id):
+#     i = 0
+#     result = []
+#     
+#     result = get_restaurant_info(chat_id, result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
+#     
+#     while (i < 3):
+#         msg_text = result[i][1].decode('utf-8').encode('utf-8') 
+#         send_msg(chat_id, msg_text)
 
     
     
@@ -336,12 +337,11 @@ def process_cmds(msg):
 #         search_restaurant(chat_id)
         i = 0
         result = []
-    
         result = get_restaurant_info(chat_id, result, location, menu, menu_detail) #반환할 때 순차적으로 1개 해야할 듯?
-        
         while (i < 3):
             msg_text = result[i][1].decode('utf-8').encode('utf-8') 
             send_msg(chat_id, msg_text)
+            
         return
 
     
