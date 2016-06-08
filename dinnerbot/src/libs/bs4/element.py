@@ -257,9 +257,9 @@ class PageElement(object):
         if self.parent is not None:
             del self.parent.contents[self.parent.index(self)]
 
-        #Find the two elements that would be next to each other if
-        #this element (and any children) hadn't been parsed. Connect
-        #the two.
+        # Find the two elements that would be next to each other if
+        # this element (and any children) hadn't been parsed. Connect
+        # the two.
         last_child = self._last_descendant()
         next_element = last_child.next_element
 
@@ -401,7 +401,7 @@ class PageElement(object):
         if isinstance(successor, PageElement):
             successor.extract()
         index = parent.index(self)
-        parent.insert(index+1, successor)
+        parent.insert(index + 1, successor)
 
     def find_next(self, name=None, attrs={}, text=None, **kwargs):
         """Returns the first item that matches the given criteria and
@@ -430,7 +430,7 @@ class PageElement(object):
         criteria and appear after this Tag in the document."""
         return self._find_all(name, attrs, text, limit,
                               self.next_siblings, **kwargs)
-    findNextSiblings = find_next_siblings   # BS3
+    findNextSiblings = find_next_siblings  # BS3
     fetchNextSiblings = find_next_siblings  # BS2
 
     def find_previous(self, name=None, attrs={}, text=None, **kwargs):
@@ -447,7 +447,7 @@ class PageElement(object):
         return self._find_all(name, attrs, text, limit, self.previous_elements,
                            **kwargs)
     findAllPrevious = find_all_previous  # BS3
-    fetchPrevious = find_all_previous    # BS2
+    fetchPrevious = find_all_previous  # BS2
 
     def find_previous_sibling(self, name=None, attrs={}, text=None, **kwargs):
         """Returns the closest sibling to this Tag that matches the
@@ -462,7 +462,7 @@ class PageElement(object):
         criteria and appear before this Tag in the document."""
         return self._find_all(name, attrs, text, limit,
                               self.previous_siblings, **kwargs)
-    findPreviousSiblings = find_previous_siblings   # BS3
+    findPreviousSiblings = find_previous_siblings  # BS3
     fetchPreviousSiblings = find_previous_siblings  # BS2
 
     def find_parent(self, name=None, attrs={}, **kwargs):
@@ -483,7 +483,7 @@ class PageElement(object):
 
         return self._find_all(name, attrs, None, limit, self.parents,
                              **kwargs)
-    findParents = find_parents   # BS3
+    findParents = find_parents  # BS3
     fetchParents = find_parents  # BS2
 
     @property
@@ -494,7 +494,7 @@ class PageElement(object):
     def previous(self):
         return self.previous_element
 
-    #These methods do the real heavy lifting.
+    # These methods do the real heavy lifting.
 
     def _find_one(self, method, name, attrs, text, **kwargs):
         r = None
@@ -541,8 +541,8 @@ class PageElement(object):
                         break
         return results
 
-    #These generators can be used to navigate starting from both
-    #NavigableStrings and Tags.
+    # These generators can be used to navigate starting from both
+    # NavigableStrings and Tags.
     @property
     def next_elements(self):
         i = self.next_element
@@ -590,7 +590,7 @@ class PageElement(object):
     #     |                           Attribute
     #    Tag
     attribselect_re = re.compile(
-        r'^(?P<tag>[a-zA-Z0-9][-.a-zA-Z0-9:_]*)?\[(?P<attribute>[\w-]+)(?P<operator>[=~\|\^\$\*]?)' +
+        r'^(?P<tag>[a-zA-Z0-9][-.a-zA-Z0-9:_]*)?\[(?P<attribute>[\w-]+)(?P<operator>[=~\|\^\$\*]?)' + 
         r'=?"?(?P<value>[^\]"]*)"?\]$'
         )
 
@@ -602,7 +602,7 @@ class PageElement(object):
         """
         value = self.get(value, default)
         if isinstance(value, list) or isinstance(value, tuple):
-            value =" ".join(value)
+            value = " ".join(value)
         return value
 
     def _tag_name_matches_and(self, function, tag_name):
@@ -735,7 +735,7 @@ class PreformattedString(NavigableString):
         """CData strings are passed into the formatter.
         But the return value is ignored."""
         self.format_string(self, formatter)
-        return self.PREFIX + self + self.SUFFIX
+        return self.PREFIX + self +self.SUFFIX
 
 class CData(PreformattedString):
 
@@ -988,7 +988,7 @@ class Tag(PageElement):
         return self.find_all(*args, **kwargs)
 
     def __getattr__(self, tag):
-        #print "Getattr %s.%s" % (self.__class__, tag)
+        # print "Getattr %s.%s" % (self.__class__, tag)
         if len(tag) > 3 and tag.endswith('Tag'):
             # BS3: soup.aTag -> "soup.find("a")
             tag_name = tag[:-3]
@@ -997,7 +997,7 @@ class Tag(PageElement):
                     tag_name, tag_name))
             return self.find(tag_name)
         # We special case contents to avoid recursion.
-        elif not tag.startswith("__") and not tag=="contents":
+        elif not tag.startswith("__") and not tag == "contents":
             return self.find(tag)
         raise AttributeError(
             "'%s' object has no attribute '%s'" % (self.__class__, tag))
@@ -1228,7 +1228,7 @@ class Tag(PageElement):
         return self.encode_contents(
             indent_level=indentLevel, encoding=encoding)
 
-    #Soup methods
+    # Soup methods
 
     def find(self, name=None, attrs={}, recursive=True, text=None,
              **kwargs):
@@ -1257,10 +1257,10 @@ class Tag(PageElement):
         if not recursive:
             generator = self.children
         return self._find_all(name, attrs, text, limit, generator, **kwargs)
-    findAll = find_all       # BS3
+    findAll = find_all  # BS3
     findChildren = find_all  # BS2
 
-    #Generator methods
+    # Generator methods
     @property
     def children(self):
         # return iter() to make the purpose of the method clear
@@ -1320,7 +1320,7 @@ class Tag(PageElement):
             new_context = []
             new_context_ids = set([])
 
-            if tokens[index-1] in self._selector_combinators:
+            if tokens[index - 1] in self._selector_combinators:
                 # This token was consumed by the previous combinator. Skip it.
                 if self._select_debug:
                     print '  Token was consumed by the previous combinator.'
@@ -1434,7 +1434,7 @@ class Tag(PageElement):
                 # In the case of "> foo", the candidate generator is
                 # one that yields a tag's direct children (">"), and
                 # the selector is "foo".
-                next_token = tokens[index+1]
+                next_token = tokens[index + 1]
                 def recursive_select(tag):
                     if self._select_debug:
                         print '    Calling select("%s") recursively on %s %s' % (next_token, tag.name, tag.attrs)

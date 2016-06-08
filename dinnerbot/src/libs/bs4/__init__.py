@@ -45,7 +45,7 @@ from .element import (
 
 # The very first thing we do is give a useful error if someone is
 # running this code under Python 3 without converting it.
-'You are trying to run the Python 2 version of Beautiful Soup under Python 3. This will not work.'<>'You need to convert the code, either by installing it (`python setup.py install`) or by running 2to3 (`2to3 -w bs4`).'
+'You are trying to run the Python 2 version of Beautiful Soup under Python 3. This will not work.' <> 'You need to convert the code, either by installing it (`python setup.py install`) or by running 2to3 (`2to3 -w bs4`).'
 
 class BeautifulSoup(Tag):
     """
@@ -171,7 +171,7 @@ class BeautifulSoup(Tag):
 
         self.parse_only = parse_only
 
-        if hasattr(markup, 'read'):        # It's a file-type object.
+        if hasattr(markup, 'read'):  # It's a file-type object.
             markup = markup.read()
         elif len(markup) <= 256:
             # Print out warnings for a couple beginner problems
@@ -270,13 +270,13 @@ class BeautifulSoup(Tag):
         tag = self.tagStack.pop()
         if self.preserve_whitespace_tag_stack and tag == self.preserve_whitespace_tag_stack[-1]:
             self.preserve_whitespace_tag_stack.pop()
-        #print "Pop", tag.name
+        # print "Pop", tag.name
         if self.tagStack:
             self.currentTag = self.tagStack[-1]
         return self.currentTag
 
     def pushTag(self, tag):
-        #print "Push", tag.name
+        # print "Push", tag.name
         if self.currentTag:
             self.currentTag.contents.append(tag)
         self.tagStack.append(tag)
@@ -340,12 +340,12 @@ class BeautifulSoup(Tag):
                 previous_element = parent
                 previous_sibling = None
             else:
-                previous_element = previous_sibling = parent.contents[index-1]
-            if index == len(parent.contents)-1:
+                previous_element = previous_sibling = parent.contents[index - 1]
+            if index == len(parent.contents) - 1:
                 next_element = parent.next_sibling
                 next_sibling = None
             else:
-                next_element = next_sibling = parent.contents[index+1]
+                next_element = next_sibling = parent.contents[index + 1]
 
             o.previous_element = previous_element
             if previous_element:
@@ -365,7 +365,7 @@ class BeautifulSoup(Tag):
         instance of the given tag. If inclusivePop is false, pops the tag
         stack up to but *not* including the most recent instqance of
         the given tag."""
-        #print "Popping to %s" % name
+        # print "Popping to %s" % name
         if name == self.ROOT_TAG_NAME:
             # The BeautifulSoup object itself can never be popped.
             return
@@ -411,7 +411,7 @@ class BeautifulSoup(Tag):
         return tag
 
     def handle_endtag(self, name, nsprefix=None):
-        #print "End tag: " + name
+        # print "End tag: " + name
         self.endData()
         self._popToTag(name, nsprefix)
 
@@ -461,7 +461,7 @@ class FeatureNotFound(ValueError):
     pass
 
 
-#By default, act as an HTML pretty-printer.
+# By default, act as an HTML pretty-printer.
 if __name__ == '__main__':
     import sys
     soup = BeautifulSoup(sys.stdin)

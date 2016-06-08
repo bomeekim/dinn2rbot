@@ -31,14 +31,14 @@ def diagnose(data):
         else:
             basic_parsers.remove(name)
             print (
-                "I noticed that %s is not installed. Installing it may help." %
+                "I noticed that %s is not installed. Installing it may help." % 
                 name)
 
     if 'lxml' in basic_parsers:
         basic_parsers.append(["lxml", "xml"])
         try:
             from lxml import etree
-            print "Found lxml version %s" % ".".join(map(str,etree.LXML_VERSION))
+            print "Found lxml version %s" % ".".join(map(str, etree.LXML_VERSION))
         except ImportError, e:
             print (
                 "lxml is not installed or couldn't be imported.")
@@ -146,20 +146,20 @@ def rword(length=5):
 
 def rsentence(length=4):
     "Generate a random sentence-like string."
-    return " ".join(rword(random.randint(4,9)) for i in range(length))
+    return " ".join(rword(random.randint(4, 9)) for i in range(length))
         
 def rdoc(num_elements=1000):
     """Randomly generate an invalid HTML document."""
     tag_names = ['p', 'div', 'span', 'i', 'b', 'script', 'table']
     elements = []
     for i in range(num_elements):
-        choice = random.randint(0,3)
+        choice = random.randint(0, 3)
         if choice == 0:
             # New tag.
             tag_name = random.choice(tag_names)
             elements.append("<%s>" % tag_name)
         elif choice == 1:
-            elements.append(rsentence(random.randint(1,4)))
+            elements.append(rsentence(random.randint(1, 4)))
         elif choice == 2:
             # Close a tag.
             tag_name = random.choice(tag_names)
@@ -183,20 +183,20 @@ def benchmark_parsers(num_elements=100000):
             print "%s could not parse the markup." % parser
             traceback.print_exc()
         if success:
-            print "BS4+%s parsed the markup in %.2fs." % (parser, b-a)
+            print "BS4+%s parsed the markup in %.2fs." % (parser, b - a)
 
     from lxml import etree
     a = time.time()
     etree.HTML(data)
     b = time.time()
-    print "Raw lxml parsed the markup in %.2fs." % (b-a)
+    print "Raw lxml parsed the markup in %.2fs." % (b - a)
 
     import html5lib
     parser = html5lib.HTMLParser()
     a = time.time()
     parser.parse(data)
     b = time.time()
-    print "Raw html5lib parsed the markup in %.2fs." % (b-a)
+    print "Raw html5lib parsed the markup in %.2fs." % (b - a)
 
 def profile(num_elements=100000, parser="lxml"):
 

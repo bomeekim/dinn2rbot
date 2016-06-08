@@ -31,8 +31,8 @@ except ImportError:
         import chardet
         def chardet_dammit(s):
             return chardet.detect(s)['encoding']
-        #import chardet.constants
-        #chardet.constants._debug = 1
+        # import chardet.constants
+        # chardet.constants._debug = 1
     except ImportError:
         # No chardet available.
         def chardet_dammit(s):
@@ -421,16 +421,16 @@ class UnicodeDammit:
             markup = smart_quotes_compiled.sub(self._sub_ms_char, markup)
 
         try:
-            #print "Trying to convert document to %s (errors=%s)" % (
+            # print "Trying to convert document to %s (errors=%s)" % (
             #    proposed, errors)
             u = self._to_unicode(markup, proposed, errors)
             self.markup = u
             self.original_encoding = proposed
         except Exception as e:
-            #print "That didn't work!"
-            #print e
+            # print "That didn't work!"
+            # print e
             return None
-        #print "Correct encoding: %s" % proposed
+        # print "Correct encoding: %s" % proposed
         return self.markup
 
     def _to_unicode(self, data, encoding, errors="strict"):
@@ -499,7 +499,7 @@ class UnicodeDammit:
                 b'\x9c': ('oelig', '153'),
                 b'\x9d': '?',
                 b'\x9e': ('#x17E', '17E'),
-                b'\x9f': ('Yuml', ''),}
+                b'\x9f': ('Yuml', ''), }
 
     # A parochial partial mapping of ISO-Latin-1 to ASCII. Contains
     # horrors like stripping diacritical marks to turn á into a, but also
@@ -541,8 +541,8 @@ class UnicodeDammit:
         b'\xa1' : '!',
         b'\xa2' : 'c',
         b'\xa3' : 'GBP',
-        b'\xa4' : '$', #This approximation is especially parochial--this is the
-                       #generic currency symbol.
+        b'\xa4' : '$',  # This approximation is especially parochial--this is the
+                       # generic currency symbol.
         b'\xa5' : 'YEN',
         b'\xa6' : '|',
         b'\xa7' : 'S',
@@ -642,134 +642,134 @@ class UnicodeDammit:
     # Note that \x81, \x8d, \x8f, \x90, and \x9d are undefined in
     # Windows-1252.
     WINDOWS_1252_TO_UTF8 = {
-        0x80 : b'\xe2\x82\xac', # €
-        0x82 : b'\xe2\x80\x9a', # ‚
-        0x83 : b'\xc6\x92',     # ƒ
-        0x84 : b'\xe2\x80\x9e', # „
-        0x85 : b'\xe2\x80\xa6', # …
-        0x86 : b'\xe2\x80\xa0', # †
-        0x87 : b'\xe2\x80\xa1', # ‡
-        0x88 : b'\xcb\x86',     # ˆ
-        0x89 : b'\xe2\x80\xb0', # ‰
-        0x8a : b'\xc5\xa0',     # Š
-        0x8b : b'\xe2\x80\xb9', # ‹
-        0x8c : b'\xc5\x92',     # Œ
-        0x8e : b'\xc5\xbd',     # Ž
-        0x91 : b'\xe2\x80\x98', # ‘
-        0x92 : b'\xe2\x80\x99', # ’
-        0x93 : b'\xe2\x80\x9c', # “
-        0x94 : b'\xe2\x80\x9d', # ”
-        0x95 : b'\xe2\x80\xa2', # •
-        0x96 : b'\xe2\x80\x93', # –
-        0x97 : b'\xe2\x80\x94', # —
-        0x98 : b'\xcb\x9c',     # ˜
-        0x99 : b'\xe2\x84\xa2', # ™
-        0x9a : b'\xc5\xa1',     # š
-        0x9b : b'\xe2\x80\xba', # ›
-        0x9c : b'\xc5\x93',     # œ
-        0x9e : b'\xc5\xbe',     # ž
-        0x9f : b'\xc5\xb8',     # Ÿ
-        0xa0 : b'\xc2\xa0',     #  
-        0xa1 : b'\xc2\xa1',     # ¡
-        0xa2 : b'\xc2\xa2',     # ¢
-        0xa3 : b'\xc2\xa3',     # £
-        0xa4 : b'\xc2\xa4',     # ¤
-        0xa5 : b'\xc2\xa5',     # ¥
-        0xa6 : b'\xc2\xa6',     # ¦
-        0xa7 : b'\xc2\xa7',     # §
-        0xa8 : b'\xc2\xa8',     # ¨
-        0xa9 : b'\xc2\xa9',     # ©
-        0xaa : b'\xc2\xaa',     # ª
-        0xab : b'\xc2\xab',     # «
-        0xac : b'\xc2\xac',     # ¬
-        0xad : b'\xc2\xad',     # ­
-        0xae : b'\xc2\xae',     # ®
-        0xaf : b'\xc2\xaf',     # ¯
-        0xb0 : b'\xc2\xb0',     # °
-        0xb1 : b'\xc2\xb1',     # ±
-        0xb2 : b'\xc2\xb2',     # ²
-        0xb3 : b'\xc2\xb3',     # ³
-        0xb4 : b'\xc2\xb4',     # ´
-        0xb5 : b'\xc2\xb5',     # µ
-        0xb6 : b'\xc2\xb6',     # ¶
-        0xb7 : b'\xc2\xb7',     # ·
-        0xb8 : b'\xc2\xb8',     # ¸
-        0xb9 : b'\xc2\xb9',     # ¹
-        0xba : b'\xc2\xba',     # º
-        0xbb : b'\xc2\xbb',     # »
-        0xbc : b'\xc2\xbc',     # ¼
-        0xbd : b'\xc2\xbd',     # ½
-        0xbe : b'\xc2\xbe',     # ¾
-        0xbf : b'\xc2\xbf',     # ¿
-        0xc0 : b'\xc3\x80',     # À
-        0xc1 : b'\xc3\x81',     # Á
-        0xc2 : b'\xc3\x82',     # Â
-        0xc3 : b'\xc3\x83',     # Ã
-        0xc4 : b'\xc3\x84',     # Ä
-        0xc5 : b'\xc3\x85',     # Å
-        0xc6 : b'\xc3\x86',     # Æ
-        0xc7 : b'\xc3\x87',     # Ç
-        0xc8 : b'\xc3\x88',     # È
-        0xc9 : b'\xc3\x89',     # É
-        0xca : b'\xc3\x8a',     # Ê
-        0xcb : b'\xc3\x8b',     # Ë
-        0xcc : b'\xc3\x8c',     # Ì
-        0xcd : b'\xc3\x8d',     # Í
-        0xce : b'\xc3\x8e',     # Î
-        0xcf : b'\xc3\x8f',     # Ï
-        0xd0 : b'\xc3\x90',     # Ð
-        0xd1 : b'\xc3\x91',     # Ñ
-        0xd2 : b'\xc3\x92',     # Ò
-        0xd3 : b'\xc3\x93',     # Ó
-        0xd4 : b'\xc3\x94',     # Ô
-        0xd5 : b'\xc3\x95',     # Õ
-        0xd6 : b'\xc3\x96',     # Ö
-        0xd7 : b'\xc3\x97',     # ×
-        0xd8 : b'\xc3\x98',     # Ø
-        0xd9 : b'\xc3\x99',     # Ù
-        0xda : b'\xc3\x9a',     # Ú
-        0xdb : b'\xc3\x9b',     # Û
-        0xdc : b'\xc3\x9c',     # Ü
-        0xdd : b'\xc3\x9d',     # Ý
-        0xde : b'\xc3\x9e',     # Þ
-        0xdf : b'\xc3\x9f',     # ß
-        0xe0 : b'\xc3\xa0',     # à
-        0xe1 : b'\xa1',     # á
-        0xe2 : b'\xc3\xa2',     # â
-        0xe3 : b'\xc3\xa3',     # ã
-        0xe4 : b'\xc3\xa4',     # ä
-        0xe5 : b'\xc3\xa5',     # å
-        0xe6 : b'\xc3\xa6',     # æ
-        0xe7 : b'\xc3\xa7',     # ç
-        0xe8 : b'\xc3\xa8',     # è
-        0xe9 : b'\xc3\xa9',     # é
-        0xea : b'\xc3\xaa',     # ê
-        0xeb : b'\xc3\xab',     # ë
-        0xec : b'\xc3\xac',     # ì
-        0xed : b'\xc3\xad',     # í
-        0xee : b'\xc3\xae',     # î
-        0xef : b'\xc3\xaf',     # ï
-        0xf0 : b'\xc3\xb0',     # ð
-        0xf1 : b'\xc3\xb1',     # ñ
-        0xf2 : b'\xc3\xb2',     # ò
-        0xf3 : b'\xc3\xb3',     # ó
-        0xf4 : b'\xc3\xb4',     # ô
-        0xf5 : b'\xc3\xb5',     # õ
-        0xf6 : b'\xc3\xb6',     # ö
-        0xf7 : b'\xc3\xb7',     # ÷
-        0xf8 : b'\xc3\xb8',     # ø
-        0xf9 : b'\xc3\xb9',     # ù
-        0xfa : b'\xc3\xba',     # ú
-        0xfb : b'\xc3\xbb',     # û
-        0xfc : b'\xc3\xbc',     # ü
-        0xfd : b'\xc3\xbd',     # ý
-        0xfe : b'\xc3\xbe',     # þ
+        0x80 : b'\xe2\x82\xac',  # €
+        0x82 : b'\xe2\x80\x9a',  # ‚
+        0x83 : b'\xc6\x92',  # ƒ
+        0x84 : b'\xe2\x80\x9e',  # „
+        0x85 : b'\xe2\x80\xa6',  # …
+        0x86 : b'\xe2\x80\xa0',  # †
+        0x87 : b'\xe2\x80\xa1',  # ‡
+        0x88 : b'\xcb\x86',  # ˆ
+        0x89 : b'\xe2\x80\xb0',  # ‰
+        0x8a : b'\xc5\xa0',  # Š
+        0x8b : b'\xe2\x80\xb9',  # ‹
+        0x8c : b'\xc5\x92',  # Œ
+        0x8e : b'\xc5\xbd',  # Ž
+        0x91 : b'\xe2\x80\x98',  # ‘
+        0x92 : b'\xe2\x80\x99',  # ’
+        0x93 : b'\xe2\x80\x9c',  # “
+        0x94 : b'\xe2\x80\x9d',  # ”
+        0x95 : b'\xe2\x80\xa2',  # •
+        0x96 : b'\xe2\x80\x93',  # –
+        0x97 : b'\xe2\x80\x94',  # —
+        0x98 : b'\xcb\x9c',  # ˜
+        0x99 : b'\xe2\x84\xa2',  # ™
+        0x9a : b'\xc5\xa1',  # š
+        0x9b : b'\xe2\x80\xba',  # ›
+        0x9c : b'\xc5\x93',  # œ
+        0x9e : b'\xc5\xbe',  # ž
+        0x9f : b'\xc5\xb8',  # Ÿ
+        0xa0 : b'\xc2\xa0',  #  
+        0xa1 : b'\xc2\xa1',  # ¡
+        0xa2 : b'\xc2\xa2',  # ¢
+        0xa3 : b'\xc2\xa3',  # £
+        0xa4 : b'\xc2\xa4',  # ¤
+        0xa5 : b'\xc2\xa5',  # ¥
+        0xa6 : b'\xc2\xa6',  # ¦
+        0xa7 : b'\xc2\xa7',  # §
+        0xa8 : b'\xc2\xa8',  # ¨
+        0xa9 : b'\xc2\xa9',  # ©
+        0xaa : b'\xc2\xaa',  # ª
+        0xab : b'\xc2\xab',  # «
+        0xac : b'\xc2\xac',  # ¬
+        0xad : b'\xc2\xad',  # ­
+        0xae : b'\xc2\xae',  # ®
+        0xaf : b'\xc2\xaf',  # ¯
+        0xb0 : b'\xc2\xb0',  # °
+        0xb1 : b'\xc2\xb1',  # ±
+        0xb2 : b'\xc2\xb2',  # ²
+        0xb3 : b'\xc2\xb3',  # ³
+        0xb4 : b'\xc2\xb4',  # ´
+        0xb5 : b'\xc2\xb5',  # µ
+        0xb6 : b'\xc2\xb6',  # ¶
+        0xb7 : b'\xc2\xb7',  # ·
+        0xb8 : b'\xc2\xb8',  # ¸
+        0xb9 : b'\xc2\xb9',  # ¹
+        0xba : b'\xc2\xba',  # º
+        0xbb : b'\xc2\xbb',  # »
+        0xbc : b'\xc2\xbc',  # ¼
+        0xbd : b'\xc2\xbd',  # ½
+        0xbe : b'\xc2\xbe',  # ¾
+        0xbf : b'\xc2\xbf',  # ¿
+        0xc0 : b'\xc3\x80',  # À
+        0xc1 : b'\xc3\x81',  # Á
+        0xc2 : b'\xc3\x82',  # Â
+        0xc3 : b'\xc3\x83',  # Ã
+        0xc4 : b'\xc3\x84',  # Ä
+        0xc5 : b'\xc3\x85',  # Å
+        0xc6 : b'\xc3\x86',  # Æ
+        0xc7 : b'\xc3\x87',  # Ç
+        0xc8 : b'\xc3\x88',  # È
+        0xc9 : b'\xc3\x89',  # É
+        0xca : b'\xc3\x8a',  # Ê
+        0xcb : b'\xc3\x8b',  # Ë
+        0xcc : b'\xc3\x8c',  # Ì
+        0xcd : b'\xc3\x8d',  # Í
+        0xce : b'\xc3\x8e',  # Î
+        0xcf : b'\xc3\x8f',  # Ï
+        0xd0 : b'\xc3\x90',  # Ð
+        0xd1 : b'\xc3\x91',  # Ñ
+        0xd2 : b'\xc3\x92',  # Ò
+        0xd3 : b'\xc3\x93',  # Ó
+        0xd4 : b'\xc3\x94',  # Ô
+        0xd5 : b'\xc3\x95',  # Õ
+        0xd6 : b'\xc3\x96',  # Ö
+        0xd7 : b'\xc3\x97',  # ×
+        0xd8 : b'\xc3\x98',  # Ø
+        0xd9 : b'\xc3\x99',  # Ù
+        0xda : b'\xc3\x9a',  # Ú
+        0xdb : b'\xc3\x9b',  # Û
+        0xdc : b'\xc3\x9c',  # Ü
+        0xdd : b'\xc3\x9d',  # Ý
+        0xde : b'\xc3\x9e',  # Þ
+        0xdf : b'\xc3\x9f',  # ß
+        0xe0 : b'\xc3\xa0',  # à
+        0xe1 : b'\xa1',  # á
+        0xe2 : b'\xc3\xa2',  # â
+        0xe3 : b'\xc3\xa3',  # ã
+        0xe4 : b'\xc3\xa4',  # ä
+        0xe5 : b'\xc3\xa5',  # å
+        0xe6 : b'\xc3\xa6',  # æ
+        0xe7 : b'\xc3\xa7',  # ç
+        0xe8 : b'\xc3\xa8',  # è
+        0xe9 : b'\xc3\xa9',  # é
+        0xea : b'\xc3\xaa',  # ê
+        0xeb : b'\xc3\xab',  # ë
+        0xec : b'\xc3\xac',  # ì
+        0xed : b'\xc3\xad',  # í
+        0xee : b'\xc3\xae',  # î
+        0xef : b'\xc3\xaf',  # ï
+        0xf0 : b'\xc3\xb0',  # ð
+        0xf1 : b'\xc3\xb1',  # ñ
+        0xf2 : b'\xc3\xb2',  # ò
+        0xf3 : b'\xc3\xb3',  # ó
+        0xf4 : b'\xc3\xb4',  # ô
+        0xf5 : b'\xc3\xb5',  # õ
+        0xf6 : b'\xc3\xb6',  # ö
+        0xf7 : b'\xc3\xb7',  # ÷
+        0xf8 : b'\xc3\xb8',  # ø
+        0xf9 : b'\xc3\xb9',  # ù
+        0xfa : b'\xc3\xba',  # ú
+        0xfb : b'\xc3\xbb',  # û
+        0xfc : b'\xc3\xbc',  # ü
+        0xfd : b'\xc3\xbd',  # ý
+        0xfe : b'\xc3\xbe',  # þ
         }
 
     MULTIBYTE_MARKERS_AND_SIZES = [
-        (0xc2, 0xdf, 2), # 2-byte characters start with a byte C2-DF
-        (0xe0, 0xef, 3), # 3-byte characters start with E0-EF
-        (0xf0, 0xf4, 4), # 4-byte characters start with F0-F4
+        (0xc2, 0xdf, 2),  # 2-byte characters start with a byte C2-DF
+        (0xe0, 0xef, 3),  # 3-byte characters start with E0-EF
+        (0xf0, 0xf4, 4),  # 4-byte characters start with F0-F4
         ]
 
     FIRST_MULTIBYTE_MARKER = MULTIBYTE_MARKERS_AND_SIZES[0][0]
