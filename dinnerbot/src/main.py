@@ -209,16 +209,50 @@ def cmd_echo(chat_id, text, reply_to):
     reply_to: (integer) 답장할 메시지 ID
     """
     send_msg(chat_id, text, reply_to=reply_to)
-    
+
 def search_restaurant(chat_id):
-    i = 0
-    result = []
+    global menu_detail
+    global location
+    global CLOUDSQL_PROJECT
+    global CLOUDSQL_INSTANCE
     
-    result = get_restaurant_info(chat_id, result, location, menu, menu_detail)  # 반환할 때 순차적으로 1개 해야할 듯?
     
-    while (i < 3):
-        msg_text = result[i][1].decode('utf-8').encode('utf-8') 
-        send_msg(chat_id, msg_text)
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
+            db = MySQLdb.connect(
+                unix_socket='/cloudsql/{}:{}'.format(
+                    CLOUDSQL_PROJECT,
+                    CLOUDSQL_INSTANCE),
+                user='root')
+    
+    cursor = db.cursor()
+    
+    db.query("set character_set_connection=utf8;")
+    db.query("set character_set_server=utf8;")
+    db.query("set character_set_client=utf8;")
+    db.query("set character_set_results=utf8;")
+    db.query("set character_set_database=utf8;")
+    
+    cursor.execute("select minorName, resName, url, address, tel from category.restaurant where minorName = '"+ menu_detail + "'")
+    results = cursor.fetchall()
+    
+    all_res = []
+    all_url = []
+    all_address = []
+    all_tel = []
+    recommend_number = 0
+    
+    for row in results:
+        all_res.append(row[1])
+        all_url.append(row[2])
+        all_address.append(row[3])
+        all_tel.append(row[4])
+        
+    recommend_number = random.randrange(0,len(all_res))
+
+       
+    
+    msg_text = location + u' ' + menu_detail + u'전문점 ' + all_res[recommend_number] + u'\n주소 : ' +all_address[recommend_number] +  u'\n전화번호 : ' + all_tel[recommend_number] + u'\nURL :' + all_url[recommend_number]
+    send_msg(chat_id, msg_text)
 
 def random_menu(chat_id):
     global menu
@@ -249,7 +283,6 @@ def random_menu(chat_id):
     for row in results:
         majorMenu.append(row[0])
     menuNumber = random.randrange(0,len(majorMenu))
-#     menu = u'한식'
     while True :
         menuNumber = random.randrange(0,len(majorMenu))
         if (menuNumber in rejectMenu):
@@ -264,6 +297,7 @@ def random_menu(chat_id):
     
     
 def random_menu_detail(chat_id):
+    global process
     global menu
     global menu_detail
     global nowNumber
@@ -286,6 +320,7 @@ def random_menu_detail(chat_id):
     db.query("set character_set_results=utf8;")
     db.query("set character_set_database=utf8;")
     
+    
     cursor.execute("select minorName from category.minor where majorName = '" + menu + "'")
     results = cursor.fetchall()
     
@@ -302,10 +337,10 @@ def random_menu_detail(chat_id):
     nowNumber = menuNumber
     menu_detail = minorMenu[menuNumber]
     
-    
-#     menu_detail = u'삼겹살'
-    msg_text = u'세부 메뉴를 추천해 드릴게요. \n' + menu_detail + u'은(는) 어떠세요?'
-    send_msg(chat_id, msg_text)
+    if process == 6:
+        msg_text = u'세부 메뉴를 추천해 드릴게요. \n' + menu_detail + u'은(는) 어떠세요?'
+        send_msg(chat_id, msg_text)
+        return
     
 def process_cmds(msg):
     u"""사용자 메시지를 분석해 봇 명령을 처리
@@ -343,7 +378,7 @@ def process_cmds(msg):
     
     if process == 2:
         # LOCATION 변수에 유저가 입력한 지역저장
-        location = text         
+        location = text.encode('utf-8')         
         # DB에서 지역 검색 
         msg_text = location
         msg_text += u'이(가) 맞으신가요? 아니라면 "아니"를 입력해 주시고, \n맞으면 원하시는 메뉴를 말씀해 주세요.\n\n'
@@ -357,20 +392,18 @@ def process_cmds(msg):
             process = 1
             process_cmds(' ')
         elif u'아무거나' == text:
-#             menu_list = '한식', '중식', '일식', '해산물', '고기', '뷔페', '분식'
-#             menu = random.shuffle(menu_list)
             random_menu(chat_id);
             process = process + 1
-#             search_restaurant(chat_id)
         else:
             # MENU 변수에 유저가 입력한 메뉴저장
-            menu = text
+            menu = text.encode('utf-8')
             msg_text = location
             msg_text += " "
             msg_text += menu
             msg_text += u' (을)를 빠르게 찾아드릴게요~\n잠시만 기다려주세요.'
             send_msg(chat_id, msg_text)
-            process = process + 4
+            process = 7
+            random_menu_detail(chat_id)
             process_cmds(msg)
         return
     
@@ -384,34 +417,18 @@ def process_cmds(msg):
             random_menu(chat_id)
             return
         elif u'좋아' == text:
-            msg_text = menu + u' 이(가) 좋으시군요, 세부 메뉴를 추천해드릴까요?'
-            
+            msg_text = menu + u' 이(가) 좋으시군요.'
             
             nowNumber = -1
             del rejectMenu[0:len(rejectMenu)]
             
-            
+             
             send_msg(chat_id, msg_text)
-            process = process + 1
+            process = process + 2
+            random_menu_detail(chat_id)
         return
     
-    if process == 5:  # 세부 메뉴 추천
-        if u'응' == text:
-            random_menu_detail(chat_id)   
-            process = process + 1  
-        elif u'아니' == text:
-            # MENU 변수에 유저가 입력한 메뉴저장
-            menu = text
-            msg_text = location
-            msg_text += " "
-            msg_text += menu
-            msg_text += u' (을)를 빠르게 찾아드릴게요~\n잠시만 기다려주세요.'
-            send_msg(chat_id, msg_text)
-            process = process + 3
-            process_cmds(msg)  
-        return
-        
-    if process == 6:  # 세부메뉴 메뉴추천
+
         if u'싫어' == text:
             msg_text = u'네, 다른 메뉴를 추천해 드릴게요.'
             
@@ -433,14 +450,7 @@ def process_cmds(msg):
         return
     
     if process == 7:
-#         search_restaurant(chat_id)
-        i = 0
-        result = []    
-        result = get_restaurant_info(chat_id, result, location, menu, menu_detail)  # 반환할 때 순차적으로 1개 해야할 듯?
-        
-        while (i < 3):
-            msg_text = result[i][1].decode('utf-8').encode('utf-8') 
-            send_msg(chat_id, msg_text)
+        search_restaurant(chat_id)
 
         return
 
